@@ -1,0 +1,257 @@
+/* =====================================================
+   Assets Page — External Stylesheet
+   ===================================================== */
+
+/* ── Page wrapper ── */
+.assets-page {
+  padding: 1rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .assets-page {
+    padding: 1.5rem;
+  }
+}
+
+/* ── Filter bar ── */
+.assets-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.assets-search-wrapper {
+  position: relative;
+  flex: 1;
+  max-width: 24rem;
+}
+
+.assets-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+
+.assets-search-input {
+  padding-left: 2.25rem !important;
+  width: 100%;
+}
+
+.assets-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.assets-filter-icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+}
+
+/* Filter pill buttons */
+.assets-filter-pill {
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  line-height: 1;
+}
+
+.assets-filter-pill:hover {
+  background-color: hsl(from var(--secondary) h s calc(l - 8));
+}
+
+.assets-filter-pill--active {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.assets-filter-pill--active:hover {
+  background-color: hsl(from var(--primary) h s calc(l - 5));
+}
+
+/* ── Table card ── */
+.assets-table-card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.assets-table-scroll {
+  overflow-x: auto;
+}
+
+/* ── Table ── */
+.assets-table {
+  width: 100%;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+}
+
+/* Head */
+.assets-table thead tr {
+  background-color: hsl(from var(--secondary) h s l / 0.5);
+}
+
+.assets-table thead th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.assets-table thead th:last-child,
+.assets-table thead th.col-actions {
+  text-align: right;
+}
+
+.assets-table thead th.col-cost {
+  text-align: right;
+}
+
+/* Body rows */
+.assets-table tbody tr {
+  border-top: 1px solid hsl(from var(--border) h s l / 0.5);
+  transition: background-color 0.12s ease;
+}
+
+.assets-table tbody tr:hover {
+  background-color: hsl(from var(--secondary) h s l / 0.3);
+}
+
+/* Cells */
+.assets-table tbody td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+}
+
+/* Asset tag — monospace accent */
+.assets-table .cell-tag {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  color: var(--primary);
+}
+
+/* Asset name */
+.assets-table .cell-name {
+  font-weight: 500;
+}
+
+/* Muted secondary info */
+.assets-table .cell-muted {
+  color: var(--muted-foreground);
+}
+
+/* Cost — right-aligned */
+.assets-table .cell-cost {
+  text-align: right;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Actions — right-aligned */
+.assets-table .cell-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.assets-table .cell-actions > * + * {
+  margin-left: 0.5rem;
+}
+
+/* ── Empty-state row ── */
+.assets-empty-cell {
+  padding: 1rem;
+}
+
+/* ── Dialog / Form helpers ── */
+
+/* Two-column grid inside dialogs */
+.assets-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Three-column grid inside dialogs */
+.assets-form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 540px) {
+  .assets-form-grid-2,
+  .assets-form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Form footer buttons */
+.assets-form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 1rem;
+}
+
+/* Detail view rows inside the view dialog */
+.assets-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.assets-detail-label {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+.assets-detail-value {
+  font-weight: 500;
+}
+
+.assets-detail-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Dialog close footer */
+.assets-dialog-footer-right {
+  margin-top: 1.5rem;
+  text-align: right;
+}
+
+/* ── Utility: visually hidden (a11y) ── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

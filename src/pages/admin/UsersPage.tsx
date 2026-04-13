@@ -17,36 +17,36 @@ import {
 import "./css/User.css";
 
 const ROLE_OPTIONS = [
-  { value: "admin",           label: "Admin" },
-  { value: "asset_manager",   label: "Asset Manager" },
-  { value: "technician",      label: "Technician" },
+  { value: "admin", label: "Admin" },
+  { value: "asset_manager", label: "Asset Manager" },
+  { value: "technician", label: "Technician" },
   { value: "department_head", label: "Department Head" },
-  { value: "staff",           label: "Staff" },
+  { value: "staff", label: "Staff" },
 ];
 
 export default function UsersPage() {
   const queryClient = useQueryClient();
-  const [isDialogOpen, setIsDialogOpen]   = useState(false);
-  const [editingUser,  setEditingUser]    = useState<any>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
   const [formData, setFormData] = useState({
-    full_name:     "",
-    username:      "",
-    email:         "",
-    password:      "",
-    phone_number:  "",
-    role_id:       "staff",
+    full_name: "",
+    username: "",
+    email: "",
+    password: "",
+    phone_number: "",
+    role_id: "staff",
     department_id: "",
   });
 
   // ── Queries ──────────────────────────────────────────────────
   const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery({
     queryKey: ["users"],
-    queryFn:  usersAPI.getAll,
+    queryFn: usersAPI.getAll,
   });
 
   const { data: departments = [], isLoading: departmentsLoading } = useQuery({
     queryKey: ["departments"],
-    queryFn:  departmentsAPI.getAll,
+    queryFn: departmentsAPI.getAll,
   });
 
   // ── Mutations ────────────────────────────────────────────────
@@ -64,9 +64,9 @@ export default function UsersPage() {
 
   const updateMutation = useMutation({
     mutationFn: (data: any) => usersAPI.update(editingUser.user_id, {
-      full_name:     data.full_name,
-      phone_number:  data.phone_number,
-      role_id:       data.role_id,
+      full_name: data.full_name,
+      phone_number: data.phone_number,
+      role_id: data.role_id,
       department_id: data.department_id,
     }),
     onSuccess: () => {
@@ -106,12 +106,12 @@ export default function UsersPage() {
   const handleEditClick = (user: any) => {
     setEditingUser(user);
     setFormData({
-      full_name:     user.full_name,
-      username:      user.username      || "",
-      email:         user.email         || "",
-      password:      "",
-      phone_number:  user.phone_number  || "",
-      role_id:       user.role_id       || "staff",
+      full_name: user.full_name,
+      username: user.username || "",
+      email: user.email || "",
+      password: "",
+      phone_number: user.phone_number || "",
+      role_id: user.role_id || "staff",
       department_id: user.department_id || "",
     });
     setIsDialogOpen(true);
@@ -136,7 +136,7 @@ export default function UsersPage() {
     }
   };
 
-  // ── Loading / error states ────────────────────────────────────
+  //Loading / error states 
   if (usersLoading || departmentsLoading) {
     return <div className="px-4 sm:px-6 md:p-6">Loading users...</div>;
   }
@@ -144,7 +144,7 @@ export default function UsersPage() {
     return <div className="px-4 sm:px-6 md:p-6 text-destructive">Failed to load users.</div>;
   }
 
-  // ── Render ───────────────────────────────────────────────────
+  //  Render
   return (
     <div className="users-page">
       <PageHeader title="Users" description="Manage system users and roles">

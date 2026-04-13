@@ -27,7 +27,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, 
 
 const COLORS = ["hsl(174,62%,32%)", "hsl(38,92%,50%)", "hsl(200,25%,12%)", "hsl(152,60%,40%)", "hsl(200,15%,60%)"];
 
-export default function Dashboard() {
+const Dashboard =()=> {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [generalSearch, setGeneralSearch] = useState("");
@@ -68,7 +68,7 @@ export default function Dashboard() {
 
   const filteredAssets = useMemo(() => {
     let results = assets;
-    
+
     // Apply filter mode
     if (filterMode === "critical") {
       results = results.filter((a) => a.status === "maintenance" || a.status === "under_maintenance" || a.status === "faulty");
@@ -77,7 +77,7 @@ export default function Dashboard() {
     } else if (filterMode === "available") {
       results = results.filter((a) => a.status === "available");
     }
-    
+
     // Apply general search
     if (generalSearch.trim()) {
       const query = generalSearch.toLowerCase();
@@ -87,7 +87,7 @@ export default function Dashboard() {
         (a.status || "").toLowerCase().includes(query)
       );
     }
-    
+
     return results;
   }, [generalSearch, assets, filterMode]);
 
@@ -145,7 +145,7 @@ export default function Dashboard() {
 
   const filteredFaults = useMemo(() => {
     let results = faultReports;
-    
+
     // Filter by general search (assets)
     if (generalSearch.trim()) {
       const query = generalSearch.toLowerCase();
@@ -154,7 +154,7 @@ export default function Dashboard() {
         return asset !== undefined;
       });
     }
-    
+
     // Filter by fault-specific search
     if (search.trim()) {
       const query = search.toLowerCase();
@@ -169,7 +169,7 @@ export default function Dashboard() {
         );
       });
     }
-    
+
     return results;
   }, [search, generalSearch, faultReports, filteredAssets, assets]);
 
@@ -179,6 +179,7 @@ export default function Dashboard() {
       .slice(0, 5),
     [filteredAssets]
   );
+
 
   const statusDistribution = useMemo(() => {
     const distribution: Record<string, number> = {};
@@ -200,7 +201,7 @@ export default function Dashboard() {
         queryClient.invalidateQueries({ queryKey: ["faultReports"] }),
         queryClient.invalidateQueries({ queryKey: ["assignments"] }),
       ]);
-      
+
       // Refetch all queries to get fresh data
       await Promise.all([
         queryClient.refetchQueries({ queryKey: ["assets"] }),
@@ -209,7 +210,7 @@ export default function Dashboard() {
         queryClient.refetchQueries({ queryKey: ["faultReports"] }),
         queryClient.refetchQueries({ queryKey: ["assignments"] }),
       ]);
-      
+
       // Keep spinning for visual feedback
       await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
@@ -258,282 +259,283 @@ export default function Dashboard() {
             Mbale Regional Referral Hospital
           </h1>
           <p className="text-[11px] sm:text-xs md:text-sm font-bold uppercase tracking-widest text-primary-foreground/95">
-            Asset Information & Management System
+            Asset Information Management System
           </p>
         </div>
       </div>
 
       {/* Main Content with Top Padding */}
       <div className="pt-4 px-4 sm:px-6 md:p-6">
-      {/* General Search & Quick Actions */}
-      <div className="mb-6">
-        <div className="flex flex-col gap-4">
-          {/* Search Bar */}
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-            <Input
-              placeholder="Search assets, departments, categories..."
-              value={generalSearch}
-              onChange={(e) => setGeneralSearch(e.target.value)}
-              className="pl-9 pr-9 h-9 text-sm"
-            />
-            {generalSearch && (
-              <button
-                onClick={() => setGeneralSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Clear search"
+        {/* General Search & Quick Actions */}
+        <div className="mb-6">
+          <div className="flex flex-col gap-4">
+            {/* Search Bar */}
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="Search assets, departments, categories..."
+                value={generalSearch}
+                onChange={(e) => setGeneralSearch(e.target.value)}
+                className="pl-9 pr-9 h-9 text-sm"
+              />
+              {generalSearch && (
+                <button
+                  onClick={() => setGeneralSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Quick Action Buttons */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={filterMode === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterMode("all")}
+                className={`gap-1 h-8 ${filterMode === "all" ? "bg-success hover:bg-success/90 text-white border-0" : "hover:border-success hover:text-success"}`}
               >
-                <X className="h-4 w-4" />
-              </button>
+                <RotateCcw className="w-3.5 h-3.5" />
+                All Assets
+              </Button>
+              <Button
+                variant={filterMode === "critical" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterMode("critical")}
+                className={`gap-1 h-8 ${filterMode === "critical" ? "bg-destructive hover:bg-destructive/90 text-white border-0" : "hover:border-destructive hover:text-destructive"}`}
+              >
+                <AlertCircle className="w-3.5 h-3.5" />
+                Critical
+              </Button>
+              <Button
+                variant={filterMode === "maintenance" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterMode("maintenance")}
+                className={`gap-1 h-8 ${filterMode === "maintenance" ? "bg-warning hover:bg-warning/90 text-white border-0" : "hover:border-warning hover:text-warning"}`}
+              >
+                <Wrench className="w-3.5 h-3.5" />
+                Maintenance
+              </Button>
+              <Button
+                variant={filterMode === "available" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterMode("available")}
+                className={`gap-1 h-8 ${filterMode === "available" ? "bg-primary hover:bg-primary/90 text-white border-0" : "hover:border-primary hover:text-primary"}`}
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Available
+              </Button>
+
+              {/* Utility Buttons */}
+              <div className="ml-auto flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  className={`gap-1 h-8 transition-all border-0 text-white ${isRefreshing ? "bg-primary/80 opacity-90" : "bg-primary hover:bg-primary/90"}`}
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                  {isRefreshing ? "Refreshing..." : "Refresh"}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleExport}
+                  className="gap-1 h-8 bg-slate-600 hover:bg-slate-700 text-white border-0"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Export
+                </Button>
+              </div>
+            </div>
+
+            {/* Filter Summary */}
+            {(generalSearch || filterMode !== "all") && (
+              <p className="text-xs text-muted-foreground">
+                {filterMode !== "all" && <span className="font-medium">Filter: {filterMode.charAt(0).toUpperCase() + filterMode.slice(1)} • </span>}
+                Found {filteredAssets.length} assets, {filteredDepartments.length} departments, {filteredCategories.filter((c) => filteredAssets.some((a) => a.category_id === c.id)).length} active categories
+              </p>
             )}
           </div>
+        </div>
 
-          {/* Quick Action Buttons */}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={filterMode === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilterMode("all")}
-              className={`gap-1 h-8 ${filterMode === "all" ? "bg-success hover:bg-success/90 text-white border-0" : "hover:border-success hover:text-success"}`}
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              All Assets
-            </Button>
-            <Button
-              variant={filterMode === "critical" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilterMode("critical")}
-              className={`gap-1 h-8 ${filterMode === "critical" ? "bg-destructive hover:bg-destructive/90 text-white border-0" : "hover:border-destructive hover:text-destructive"}`}
-            >
-              <AlertCircle className="w-3.5 h-3.5" />
-              Critical
-            </Button>
-            <Button
-              variant={filterMode === "maintenance" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilterMode("maintenance")}
-              className={`gap-1 h-8 ${filterMode === "maintenance" ? "bg-warning hover:bg-warning/90 text-white border-0" : "hover:border-warning hover:text-warning"}`}
-            >
-              <Wrench className="w-3.5 h-3.5" />
-              Maintenance
-            </Button>
-            <Button
-              variant={filterMode === "available" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilterMode("available")}
-              className={`gap-1 h-8 ${filterMode === "available" ? "bg-primary hover:bg-primary/90 text-white border-0" : "hover:border-primary hover:text-primary"}`}
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              Available
-            </Button>
+        {/* Stats */}
+        <div className="dashboard-grid dashboard-stats-grid">
+          <StatCard title="Total Assets" value={dashboardStats.totalAssets} icon={Package} variant="primary" trend="+12 this month" />
+          <StatCard title="Active Assets" value={dashboardStats.activeAssets} icon={Activity} variant="success" />
+          <StatCard title="Under Maintenance" value={dashboardStats.underMaintenance} icon={Wrench} variant="accent" />
+          <StatCard title="Open Faults" value={dashboardStats.openFaults} icon={AlertTriangle} variant="default" />
+        </div>
 
-            {/* Utility Buttons */}
-            <div className="ml-auto flex gap-2">
-              <Button
-                size="sm"
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className={`gap-1 h-8 transition-all border-0 text-white ${isRefreshing ? "bg-primary/80 opacity-90" : "bg-primary hover:bg-primary/90"}`}
-              >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
-                {isRefreshing ? "Refreshing..." : "Refresh"}
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleExport}
-                className="gap-1 h-8 bg-slate-600 hover:bg-slate-700 text-white border-0"
-              >
-                <Download className="w-3.5 h-3.5" />
-                Export
-              </Button>
+        <div className="dashboard-grid dashboard-stats-grid">
+          <StatCard title="Total Value" value={`UGX ${(dashboardStats.totalValue / 1000000).toFixed(1)}M`} icon={DollarSign} />
+          <StatCard title="Departments" value={dashboardStats.departments} icon={Building2} />
+          <StatCard title="Disposed" value={dashboardStats.disposed} icon={Package} />
+          <StatCard title="Pending Assignments" value={dashboardStats.pendingAssignments} icon={ClipboardList} />
+        </div>
+
+        {/* Charts */}
+        <div className="dashboard-grid dashboard-charts-grid">
+          <div className="dashboard-card">
+            <h3 className="dashboard-card-heading">Assets by Category</h3>
+            <ResponsiveContainer width="100%" height={240}>
+              <PieChart>
+                <Pie data={categoryData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} dataKey="value" paddingAngle={3}>
+                  {categoryData.map((_, i) => (
+                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex flex-wrap gap-3 mt-2">
+              {categoryData.map((item, i) => (
+                <div key={item.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                  {item.name}
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Filter Summary */}
-          {(generalSearch || filterMode !== "all") && (
-            <p className="text-xs text-muted-foreground">
-              {filterMode !== "all" && <span className="font-medium">Filter: {filterMode.charAt(0).toUpperCase() + filterMode.slice(1)} • </span>}
-              Found {filteredAssets.length} assets, {filteredDepartments.length} departments, {filteredCategories.filter((c) => filteredAssets.some((a) => a.category_id === c.id)).length} active categories
-            </p>
+          <div className="dashboard-card">
+            <h3 className="dashboard-card-heading">Assets by Department</h3>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={deptData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(195,15%,88%)" />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Bar dataKey="assets" fill="hsl(174,62%,32%)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Top Assets & Status Distribution */}
+        <div className="dashboard-grid dashboard-charts-grid">
+          {/* Top Assets by Value */}
+          <div className="dashboard-card">
+            <h3 className="dashboard-card-heading">Top Assets by Value</h3>
+            <div className="space-y-3">
+              {topValueAssets.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No assets found</p>
+              ) : (
+                topValueAssets.map((asset, index) => (
+                  <div key={asset.id} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
+                    <div className="flex items-center gap-3 flex-1">
+                      <span className="text-xs font-bold bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center">
+                        {index + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{asset.asset_name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{asset.asset_tag}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold">UGX {(Number(asset.purchase_cost || 0) / 1000000).toFixed(1)}M</p>
+                      <StatusBadge status={asset.status} />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Status Distribution */}
+          <div className="dashboard-card">
+            <h3 className="dashboard-card-heading">Asset Status Distribution</h3>
+            <div className="space-y-2">
+              {statusDistribution.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No data</p>
+              ) : (
+                statusDistribution.map(([status, count]) => {
+                  const total = filteredAssets.length;
+                  const percentage = total > 0 ? (count / total) * 100 : 0;
+                  return (
+                    <div key={status} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="capitalize font-medium">{status}</span>
+                        <span className="text-xs font-bold text-muted-foreground">{count} ({percentage.toFixed(0)}%)</span>
+                      </div>
+                      <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Faults */}
+        <div className="dashboard-card">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="dashboard-card-heading">Recent Fault Reports</h3>
+            <TrendingUp className="w-4 h-4 text-muted-foreground" />
+          </div>
+
+          {/* Search Bar */}
+          <div className="mb-4 relative">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="Search by asset name, tag, description, priority, or status..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 pr-9 h-9 text-sm"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {filteredFaults.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              {search ? "No fault reports found matching your search." : "No fault reports yet."}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="dashboard-table">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Asset</th>
+                    <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Description</th>
+                    <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Priority</th>
+                    <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredFaults.map((f) => {
+                    const asset = assets.find((a) => a.id === f.asset_id);
+                    return (
+                      <tr key={f.id} className="border-b border-border/50 hover:bg-secondary/50 transition-colors">
+                        <td className="py-3 px-3 font-medium">{asset?.asset_name}</td>
+                        <td className="py-3 px-3 text-muted-foreground max-w-xs truncate">{f.description}</td>
+                        <td className="py-3 px-3"><StatusBadge status={f.priority} /></td>
+                        <td className="py-3 px-3"><StatusBadge status={f.status} /></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
-      </div>
-
-      {/* Stats */}
-      <div className="dashboard-grid dashboard-stats-grid">
-        <StatCard title="Total Assets" value={dashboardStats.totalAssets} icon={Package} variant="primary" trend="+12 this month" />
-        <StatCard title="Active Assets" value={dashboardStats.activeAssets} icon={Activity} variant="success" />
-        <StatCard title="Under Maintenance" value={dashboardStats.underMaintenance} icon={Wrench} variant="accent" />
-        <StatCard title="Open Faults" value={dashboardStats.openFaults} icon={AlertTriangle} variant="default" />
-      </div>
-
-      <div className="dashboard-grid dashboard-stats-grid">
-        <StatCard title="Total Value" value={`UGX ${(dashboardStats.totalValue / 1000000).toFixed(1)}M`} icon={DollarSign} />
-        <StatCard title="Departments" value={dashboardStats.departments} icon={Building2} />
-        <StatCard title="Disposed" value={dashboardStats.disposed} icon={Package} />
-        <StatCard title="Pending Assignments" value={dashboardStats.pendingAssignments} icon={ClipboardList} />
-      </div>
-
-      {/* Charts */}
-      <div className="dashboard-grid dashboard-charts-grid">
-        <div className="dashboard-card">
-          <h3 className="dashboard-card-heading">Assets by Category</h3>
-          <ResponsiveContainer width="100%" height={240}>
-            <PieChart>
-              <Pie data={categoryData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} dataKey="value" paddingAngle={3}>
-                {categoryData.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="flex flex-wrap gap-3 mt-2">
-            {categoryData.map((item, i) => (
-              <div key={item.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                {item.name}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="dashboard-card">
-          <h3 className="dashboard-card-heading">Assets by Department</h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={deptData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(195,15%,88%)" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="assets" fill="hsl(174,62%,32%)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Top Assets & Status Distribution */}
-      <div className="dashboard-grid dashboard-charts-grid">
-        {/* Top Assets by Value */}
-        <div className="dashboard-card">
-          <h3 className="dashboard-card-heading">Top Assets by Value</h3>
-          <div className="space-y-3">
-            {topValueAssets.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No assets found</p>
-            ) : (
-              topValueAssets.map((asset, index) => (
-                <div key={asset.id} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                  <div className="flex items-center gap-3 flex-1">
-                    <span className="text-xs font-bold bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center">
-                      {index + 1}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{asset.asset_name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{asset.asset_tag}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold">UGX {(Number(asset.purchase_cost || 0) / 1000000).toFixed(1)}M</p>
-                    <StatusBadge status={asset.status} />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Status Distribution */}
-        <div className="dashboard-card">
-          <h3 className="dashboard-card-heading">Asset Status Distribution</h3>
-          <div className="space-y-2">
-            {statusDistribution.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No data</p>
-            ) : (
-              statusDistribution.map(([status, count]) => {
-                const total = filteredAssets.length;
-                const percentage = total > 0 ? (count / total) * 100 : 0;
-                return (
-                  <div key={status} className="space-y-1">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="capitalize font-medium">{status}</span>
-                      <span className="text-xs font-bold text-muted-foreground">{count} ({percentage.toFixed(0)}%)</span>
-                    </div>
-                    <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
-                      <div
-                        className="h-full bg-primary transition-all"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Faults */}
-      <div className="dashboard-card">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="dashboard-card-heading">Recent Fault Reports</h3>
-          <TrendingUp className="w-4 h-4 text-muted-foreground" />
-        </div>
-
-        {/* Search Bar */}
-        <div className="mb-4 relative">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-            <Input
-              placeholder="Search by asset name, tag, description, priority, or status..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-9 h-9 text-sm"
-            />
-            {search && (
-              <button
-                onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Clear search"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {filteredFaults.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            {search ? "No fault reports found matching your search." : "No fault reports yet."}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="dashboard-table">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Asset</th>
-                  <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Description</th>
-                  <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Priority</th>
-                  <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredFaults.map((f) => {
-                  const asset = assets.find((a) => a.id === f.asset_id);
-                  return (
-                    <tr key={f.id} className="border-b border-border/50 hover:bg-secondary/50 transition-colors">
-                      <td className="py-3 px-3 font-medium">{asset?.asset_name}</td>
-                      <td className="py-3 px-3 text-muted-foreground max-w-xs truncate">{f.description}</td>
-                      <td className="py-3 px-3"><StatusBadge status={f.priority} /></td>
-                      <td className="py-3 px-3"><StatusBadge status={f.status} /></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
       </div>
     </div>
   );
 }
+export default Dashboard;

@@ -4,6 +4,7 @@ import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
+import "./css/login.css";
 
 const ROLE_OPTIONS = [
   { value: "asset_manager", label: "Asset Manager" },
@@ -12,6 +13,7 @@ const ROLE_OPTIONS = [
   { value: "staff", label: "Staff" },
 ];
 
+//main interface SignupData {
 const Signup = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
@@ -23,11 +25,11 @@ const Signup = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Handle form submission
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
     setLoading(true);
-
     try {
       await register({ full_name: fullName, username, email, password, role });
       navigate("/");
@@ -39,60 +41,137 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden items-center justify-center">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-20 w-64 h-64 rounded-full border-2 border-primary-foreground" />
-          <div className="absolute bottom-32 right-16 w-48 h-48 rounded-full border-2 border-primary-foreground" />
-          <div className="absolute top-1/2 left-1/3 w-32 h-32 rounded-full border-2 border-primary-foreground" />
+    <div className="login-root">
+
+      {/* ── LEFT — branding panel */}
+      <div className="login-panel-left">
+        {/* Background Image */}
+        <div className="login-panel-image">
+          <img
+            src="https://images.pexels.com/photos/3938022/pexels-photo-3938022.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1600"
+            alt="Healthcare Management"
+            className="login-image-asset"
+          />
+          <div className="login-image-overlay" />
         </div>
-        <div className="relative z-10 text-center px-12">
-          <div className="w-20 h-20 rounded-2xl bg-primary-foreground/20 flex items-center justify-center mx-auto mb-6">
-            <Activity className="w-10 h-10 text-primary-foreground" />
+        <div className="login-rings">
+          <div className="login-ring login-ring-1" />
+          <div className="login-ring login-ring-2" />
+          <div className="login-ring login-ring-3" />
+        </div>
+
+        <div className="login-chips">
+          <div className="login-chip login-chip-1">
+            <span className="login-chip-dot" />
+            Assets tracked
           </div>
-          <h1 className="text-3xl font-bold text-primary-foreground mb-3">MRRH Asset System</h1>
-          <p className="text-primary-foreground/70 text-sm leading-relaxed max-w-md">
-            Create your staff account and connect to hospital inventory management.
+          <div className="login-chip login-chip-2">
+            <span className="login-chip-dot amber" />
+            Maintenance alerts
+          </div>
+          <div className="login-chip login-chip-3">
+            <span className="login-chip-dot white" />
+            Departments synced
+          </div>
+          <div className="login-chip login-chip-4">
+            <span className="login-chip-dot" />
+            Live dashboard
+          </div>
+        </div>
+
+        <div className="login-brand">
+          <div className="login-brand-icon">
+            <Activity className="w-10 h-10" />
+          </div>
+          <h1 className="login-brand-title">MRRH Asset System</h1>
+          <p className="login-brand-sub">
+            Mbale Regional Referral Hospital<br />
+            Asset Information<br />Management System
           </p>
+          <div className="login-stats">
+            <div className="login-stat">
+              <div className="login-stat-val">500+</div>
+              <div className="login-stat-label">Assets</div>
+            </div>
+            <div className="login-stat">
+              <div className="login-stat-val">18</div>
+              <div className="login-stat-label">Depts</div>
+            </div>
+            <div className="login-stat">
+              <div className="login-stat-val">99%</div>
+              <div className="login-stat-label">Uptime</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-8 bg-background">
-        <div className="w-full max-w-sm">
-          <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-              <Activity className="w-5 h-5 text-primary-foreground" />
+      {/* ── RIGHT — form panel ─*/}
+      <div className="login-panel-right">
+        <div className="login-card">
+
+          {/* Mobile logo */}
+          <div className="login-mobile-logo">
+            <div className="login-mobile-icon">
+              <Activity className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-bold text-foreground">MRRH</h2>
-              <p className="text-xs text-muted-foreground">Asset Management</p>
+              <div className="login-mobile-name">MRRH</div>
+              <div className="login-mobile-tagline">Asset Management</div>
             </div>
           </div>
 
-          <h2 className="text-xl font-bold text-foreground mb-1">Sign up</h2>
-          <p className="text-sm text-muted-foreground mb-8">Create a new account with a non-admin role.</p>
+          <h2 className="login-heading">Create account</h2>
+          <p className="login-subheading">Register with a non-admin role to get started.</p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">Full name</label>
-              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Doe" />
+          <form onSubmit={handleSubmit} className="login-form">
+
+            {/* Full name */}
+            <div className="login-field">
+              <label className="login-label">Full name</label>
+              <Input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Jane Doe"
+              />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">Username</label>
-              <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="janedoe" />
+
+            {/* Username */}
+            <div className="login-field">
+              <label className="login-label">Username</label>
+              <Input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="janedoe"
+              />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@mrrh.local" />
+
+            {/* Email */}
+            <div className="login-field">
+              <label className="login-label">Email address</label>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@mrrh.local"
+              />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">Password</label>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter a secure password" />
+
+            {/* Password */}
+            <div className="login-field">
+              <label className="login-label">Password</label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter a secure password"
+              />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">Role</label>
+
+            {/* Role */}
+            <div className="login-field">
+              <label className="login-label">Role</label>
               <select
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                className="users-form-select"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
               >
@@ -104,19 +183,30 @@ const Signup = () => {
               </select>
             </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {/* Error */}
+            {error && (
+              <div className="login-error">{error}</div>
+            )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating account..." : "Create account"}
+            {/* Submit */}
+            <Button
+              type="submit"
+              className="login-submit w-full"
+              disabled={loading}
+            >
+              {loading ? "Creating account…" : "Create account"}
             </Button>
           </form>
 
-          <p className="text-xs text-center text-muted-foreground mt-6">
-            Already have an account? <Link to="/login" className="text-primary">Sign in</Link>
+          {/* Sign-in link */}
+          <p className="login-footer-link">
+            Already have an account?{" "}
+            <Link to="/login">Sign in</Link>
           </p>
         </div>
       </div>
     </div>
   );
-}
+};
+
 export default Signup;

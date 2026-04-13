@@ -18,16 +18,16 @@ interface LoginProfile {
   full_name: string;
 }
 
-export default function Login() {
+const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail]               = useState("");
-  const [password, setPassword]         = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [selectedProfile, setSelectedProfile] = useState("staff");
-  const [error, setError]               = useState<string | null>(null);
-  const [loading, setLoading]           = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   // Fetch login profiles from database
   const { data: profiles = [], isLoading: profilesLoading, error: profilesError } = useQuery<LoginProfile[]>({
@@ -44,7 +44,7 @@ export default function Login() {
     setPassword(""); // Password will be handled by the backend based on the email
     setError(null);
     setLoading(true);
-    
+
     try {
       // For demo purposes, we'll use default passwords based on role
       const defaultPasswords = {
@@ -54,7 +54,7 @@ export default function Login() {
         'department_head': 'user123',
         'staff': 'user123'
       };
-      
+
       await login({ email: profile.email, password: defaultPasswords[profile.role] || 'user123' });
       navigate(from, { replace: true });
     } catch (err: any) {
@@ -85,9 +85,9 @@ export default function Login() {
 
         {/* Background Image */}
         <div className="login-panel-image">
-          <img 
-            src="https://images.pexels.com/photos/3938022/pexels-photo-3938022.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1600" 
-            alt="Healthcare Management" 
+          <img
+            src="https://images.pexels.com/photos/3938022/pexels-photo-3938022.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1600"
+            alt="Healthcare Management"
             className="login-image-asset"
           />
           <div className="login-image-overlay" />
@@ -165,7 +165,7 @@ export default function Login() {
             </div>
           </div>
 
-          <h2 className="login-heading">Welcome back</h2>
+          <h2 className="login-heading">Your Welcome!</h2>
           <p className="login-subheading">Sign in to your account to continue</p>
 
           {/* Profile Selection */}
@@ -266,3 +266,4 @@ export default function Login() {
     </div>
   );
 }
+export default Login;;
