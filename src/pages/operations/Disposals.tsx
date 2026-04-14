@@ -44,7 +44,15 @@ export default function Disposals() {
   const error = disposalsError;
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => disposalsAPI.create(data),
+    mutationFn: async (data: any) => {
+      // Create the disposal first
+      const disposal = await disposalsAPI.create(data);
+
+      // Update asset status to "disposed"
+      await assetsAPI.update(data.asset_id, { status: "disposed" });
+
+      return disposal;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["disposals"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
@@ -72,7 +80,20 @@ export default function Disposals() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => disposalsAPI.delete(id),
+    mutationFn: async (id: string) => {
+      // Get the disposal before deleting to know which asset to update
+      const disposal = disposals.find(d => d.id === id);
+
+      // Delete the disposal
+      await disposalsAPI.delete(id);
+
+      // Set asset status back to available
+      if (disposal) {
+        await assetsAPI.update(disposal.asset_id, { status: "available" });
+      }
+
+      return id;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["disposals"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });

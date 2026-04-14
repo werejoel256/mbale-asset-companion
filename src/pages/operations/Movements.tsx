@@ -25,6 +25,7 @@ export default function Movements() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingMovement, setEditingMovement] = useState<any>(null);
   const [movementForm, setMovementForm] = useState(initialMovementForm);
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const queryClient = useQueryClient();
@@ -49,9 +50,20 @@ export default function Movements() {
   const error = movementsError;
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => movementsAPI.create(data),
+    mutationFn: async (data: any) => {
+      // Create the movement first
+      const movement = await movementsAPI.create(data);
+
+      // Update asset's department to the destination department
+      if (data.to_department_id) {
+        await assetsAPI.update(data.asset_id, { department_id: data.to_department_id });
+      }
+
+      return movement;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["movements"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
       setIsDialogOpen(false);
       setEditingMovement(null);
       setMovementForm(initialMovementForm);
@@ -62,9 +74,20 @@ export default function Movements() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => movementsAPI.update(id, data),
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      // Update the movement
+      const movement = await movementsAPI.update(id, data);
+
+      // Update asset's department to the new destination department
+      if (data.to_department_id) {
+        await assetsAPI.update(data.asset_id, { department_id: data.to_department_id });
+      }
+
+      return movement;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["movements"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
       setIsDialogOpen(false);
       setEditingMovement(null);
       setMovementForm(initialMovementForm);
@@ -75,9 +98,23 @@ export default function Movements() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => movementsAPI.delete(id),
+    mutationFn: async (id: string) => {
+      // Get the movement before deleting to know which asset and department to update
+      const movement = movements.find(m => m.id === id);
+
+      // Delete the movement
+      await movementsAPI.delete(id);
+
+      // Revert asset's department back to the from_department if it exists
+      if (movement && movement.from_department_id) {
+        await assetsAPI.update(movement.asset_id, { department_id: movement.from_department_id });
+      }
+
+      return id;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["movements"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     },
     onError: (error: any) => {
       alert(error.message || "Failed to delete movement");
@@ -110,6 +147,7 @@ export default function Movements() {
   const handleOpenCreate = () => {
     setEditingMovement(null);
     setMovementForm(initialMovementForm);
+    setFormErrors({});
     setIsDialogOpen(true);
   };
 
@@ -123,13 +161,29 @@ export default function Movements() {
       reason: movement.reason || "",
       moved_by: movement.moved_by || "",
     });
+    setFormErrors({});
     setIsDialogOpen(true);
+  };
+
+  const validateForm = () => {
+    const errors: {[key: string]: string} = {};
+
+    if (!movementForm.asset_id.trim()) {
+      errors.asset_id = "Asset is required";
+    }
+
+    if (!movementForm.to_department_id.trim()) {
+      errors.to_department_id = "Destination department is required";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSaveMovement = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!movementForm.asset_id.trim() || !movementForm.to_department_id.trim()) {
-      alert("Asset and destination department are required");
+
+    if (!validateForm()) {
       return;
     }
 
@@ -247,8 +301,13 @@ export default function Movements() {
           <form onSubmit={handleSaveMovement} className="space-y-4">
             <div>
               <label className="mb-2 block text-sm font-medium text-muted-foreground">Asset *</label>
-              <Select value={movementForm.asset_id} onValueChange={(value) => setMovementForm({ ...movementForm, asset_id: value })}>
-                <SelectTrigger>
+              <Select value={movementForm.asset_id} onValueChange={(value) => {
+                setMovementForm({ ...movementForm, asset_id: value });
+                if (formErrors.asset_id) {
+                  setFormErrors({ ...formErrors, asset_id: "" });
+                }
+              }}>
+                <SelectTrigger className={formErrors.asset_id ? "border-red-500" : ""}>
                   <SelectValue placeholder="Select an asset" />
                 </SelectTrigger>
                 <SelectContent>
@@ -259,6 +318,7 @@ export default function Movements() {
                   ))}
                 </SelectContent>
               </Select>
+              {formErrors.asset_id && <p className="mt-1 text-sm text-red-500">{formErrors.asset_id}</p>}
             </div>
 
             <div>
@@ -279,8 +339,13 @@ export default function Movements() {
 
             <div>
               <label className="mb-2 block text-sm font-medium text-muted-foreground">To Department *</label>
-              <Select value={movementForm.to_department_id} onValueChange={(value) => setMovementForm({ ...movementForm, to_department_id: value })}>
-                <SelectTrigger>
+              <Select value={movementForm.to_department_id} onValueChange={(value) => {
+                setMovementForm({ ...movementForm, to_department_id: value });
+                if (formErrors.to_department_id) {
+                  setFormErrors({ ...formErrors, to_department_id: "" });
+                }
+              }}>
+                <SelectTrigger className={formErrors.to_department_id ? "border-red-500" : ""}>
                   <SelectValue placeholder="Select to department" />
                 </SelectTrigger>
                 <SelectContent>
@@ -291,6 +356,7 @@ export default function Movements() {
                   ))}
                 </SelectContent>
               </Select>
+              {formErrors.to_department_id && <p className="mt-1 text-sm text-red-500">{formErrors.to_department_id}</p>}
             </div>
 
             <div>
