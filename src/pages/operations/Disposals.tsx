@@ -17,7 +17,7 @@ const initialDisposalForm = {
   asset_id: "",
   disposal_date: "",
   reason: "",
-  notes: "",
+  disposal_method: "",
 };
 
 export default function Disposals() {
@@ -116,7 +116,7 @@ export default function Disposals() {
       asset_id: disposal.asset_id || "",
       disposal_date: disposal.disposal_date || "",
       reason: disposal.reason || "",
-      notes: disposal.notes || "",
+      disposal_method: disposal.disposal_method || "",
     });
     setIsDialogOpen(true);
   };
@@ -140,7 +140,7 @@ export default function Disposals() {
   };
 
   const handleExportExcel = () => {
-    const headers = ["Asset", "Asset Tag", "Disposal Date", "Reason", "Notes"];
+    const headers = ["Asset", "Asset Tag", "Disposal Date", "Reason", "Disposal Method"];
     const rows = filteredDisposals.map((d: any) => {
       const asset = assets.find((a: any) => a.id === d.asset_id);
       return [
@@ -148,7 +148,7 @@ export default function Disposals() {
         asset?.asset_tag || "",
         d.disposal_date || "",
         d.reason || "",
-        d.notes || "",
+        d.disposal_method || "",
       ];
     });
 
@@ -277,11 +277,11 @@ export default function Disposals() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-muted-foreground">Notes</label>
+              <label className="mb-2 block text-sm font-medium text-muted-foreground">Disposal Method</label>
               <Input
-                value={disposalForm.notes}
-                onChange={(e) => setDisposalForm({ ...disposalForm, notes: e.target.value })}
-                placeholder="Disposal notes..."
+                value={disposalForm.disposal_method}
+                onChange={(e) => setDisposalForm({ ...disposalForm, disposal_method: e.target.value })}
+                placeholder="How was the asset disposed..."
               />
             </div>
 
@@ -346,7 +346,7 @@ export default function Disposals() {
               <TableHead>Asset</TableHead>
               <TableHead>Reason</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Notes</TableHead>
+              <TableHead>Disposal Method</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -377,7 +377,7 @@ export default function Disposals() {
                     </TableCell>
                     <TableCell>{disposal.reason || "—"}</TableCell>
                     <TableCell>{disposal.disposal_date || "—"}</TableCell>
-                    <TableCell className="max-w-xs truncate">{disposal.notes || "—"}</TableCell>
+                    <TableCell>{disposal.disposal_method || "—"}</TableCell>
                     <TableCell className="text-right space-x-2">
                       <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(disposal)}>
                         <Edit className="w-4 h-4" />

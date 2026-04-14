@@ -16,7 +16,8 @@ const initialMovementForm = {
   from_department_id: "",
   to_department_id: "",
   movement_date: "",
-  notes: "",
+  reason: "",
+  moved_by: "",
 };
 
 export default function Movements() {
@@ -119,7 +120,8 @@ export default function Movements() {
       from_department_id: movement.from_department_id || "",
       to_department_id: movement.to_department_id || "",
       movement_date: movement.movement_date || "",
-      notes: movement.notes || "",
+      reason: movement.reason || "",
+      moved_by: movement.moved_by || "",
     });
     setIsDialogOpen(true);
   };
@@ -143,7 +145,7 @@ export default function Movements() {
   };
 
   const handleExportExcel = () => {
-    const headers = ["Asset", "From Department", "To Department", "Date", "Notes"];
+    const headers = ["Asset", "From Department", "To Department", "Date", "Reason", "Moved By"];
     const rows = filteredMovements.map((m: any) => {
       const asset = assets.find((a: any) => a.id === m.asset_id);
       const fromDept = departments.find((d: any) => d.id === m.from_department_id);
@@ -153,7 +155,8 @@ export default function Movements() {
         fromDept?.department_name || "",
         toDept?.department_name || "",
         m.movement_date || "",
-        m.notes || "",
+        m.reason || "",
+        m.moved_by || "",
       ];
     });
 
@@ -300,11 +303,20 @@ export default function Movements() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-muted-foreground">Notes</label>
+              <label className="mb-2 block text-sm font-medium text-muted-foreground">Reason</label>
               <Input
-                value={movementForm.notes}
-                onChange={(e) => setMovementForm({ ...movementForm, notes: e.target.value })}
-                placeholder="Movement notes..."
+                value={movementForm.reason}
+                onChange={(e) => setMovementForm({ ...movementForm, reason: e.target.value })}
+                placeholder="Reason for movement..."
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-muted-foreground">Moved By</label>
+              <Input
+                value={movementForm.moved_by}
+                onChange={(e) => setMovementForm({ ...movementForm, moved_by: e.target.value })}
+                placeholder="Name of person who moved the asset..."
               />
             </div>
 
@@ -368,7 +380,7 @@ export default function Movements() {
               <TableHead>From</TableHead>
               <TableHead>To</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Notes</TableHead>
+              <TableHead>Reason</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -402,7 +414,7 @@ export default function Movements() {
                     <TableCell>{fromDept?.department_name || "—"}</TableCell>
                     <TableCell>{toDept?.department_name || "—"}</TableCell>
                     <TableCell>{movement.movement_date || "—"}</TableCell>
-                    <TableCell className="max-w-xs truncate">{movement.notes || "—"}</TableCell>
+                    <TableCell>{movement.reason || "—"}</TableCell>
                     <TableCell className="text-right space-x-2">
                       <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(movement)}>
                         <Edit className="w-4 h-4" />
