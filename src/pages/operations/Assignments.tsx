@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { assignmentsAPI, assetsAPI, usersAPI, departmentsAPI } from "@/lib/api";
 
 const initialAssignmentForm = {
@@ -52,9 +53,20 @@ export default function Assignments() {
   const error = assignmentsError;
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => assignmentsAPI.create(data),
+    mutationFn: async (data: any) => {
+      // Create the assignment first
+      const assignment = await assignmentsAPI.create(data);
+
+      // If assignment is active, update asset status to "assigned"
+      if (data.status === "active") {
+        await assetsAPI.update(data.asset_id, { status: "assigned" });
+      }
+
+      return assignment;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assignments"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
       setIsDialogOpen(false);
       setEditingAssignment(null);
       setAssignmentForm(initialAssignmentForm);
@@ -65,9 +77,27 @@ export default function Assignments() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => assignmentsAPI.update(id, data),
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      // Get the current assignment to check status change
+      const currentAssignment = assignments.find(a => a.id === id);
+
+      // Update the assignment
+      const assignment = await assignmentsAPI.update(id, data);
+
+      // Update asset status based on new assignment status
+      if (data.status === "active") {
+        await assetsAPI.update(data.asset_id, { status: "assigned" });
+      } else if (data.status === "returned") {
+        await assetsAPI.update(data.asset_id, { status: "available" });
+      } else if (data.status === "lost") {
+        await assetsAPI.update(data.asset_id, { status: "lost" });
+      }
+
+      return assignment;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assignments"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
       setIsDialogOpen(false);
       setEditingAssignment(null);
       setAssignmentForm(initialAssignmentForm);
@@ -78,9 +108,23 @@ export default function Assignments() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => assignmentsAPI.delete(id),
+    mutationFn: async (id: string) => {
+      // Get the assignment before deleting to know which asset to update
+      const assignment = assignments.find(a => a.id === id);
+
+      // Delete the assignment
+      await assignmentsAPI.delete(id);
+
+      // Set asset status back to available
+      if (assignment) {
+        await assetsAPI.update(assignment.asset_id, { status: "available" });
+      }
+
+      return id;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assignments"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     },
     onError: (error: any) => {
       alert(error.message || "Failed to delete assignment");
@@ -102,10 +146,19 @@ export default function Assignments() {
   }, [assignments, assets, users, search]);
 
   const totalAssignments = assignments.length;
-  const activeAssignments = assignments.filter((a: any) => {
-    const asset = assets.find((ast: any) => ast.id === a.asset_id);
-    return asset?.status === "assigned";
-  }).length;
+  const activeAssignments = assignments.filter((a: any) => a.status === "active").length;
+  const getStatusBadge = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "active":
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>;
+      case "returned":
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Returned</Badge>;
+      case "lost":
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Lost</Badge>;
+      default:
+        return <Badge variant="secondary">{status || "Unknown"}</Badge>;
+    }
+  };
 
   const handleOpenCreate = () => {
     setEditingAssignment(null);
@@ -401,7 +454,7 @@ export default function Assignments() {
                       </div>
                     </TableCell>
                     <TableCell>{assignment.assigned_date ? new Date(assignment.assigned_date).toLocaleDateString() : "—"}</TableCell>
-                    <TableCell>{assignment.status || "—"}</TableCell>
+                    <TableCell>{getStatusBadge(assignment.status)}</TableCell>
                     <TableCell className="text-right space-x-2">
                       <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(assignment)}>
                         <Edit className="w-4 h-4" />
