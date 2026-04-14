@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, Search, Download, Wrench, Calendar, DollarSign, TrendingUp } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Download, Wrench, Calendar, DollarSign, TrendingUp, CheckCircle, Clock, X, AlertTriangle } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -319,7 +319,7 @@ export default function Maintenance() {
           <TableBody>
             {filteredRecords.map((r: any) => {
               const asset = assets.find((a: any) => a.id === r.asset_id);
-              const technician = users.find((u: any) => u.id === r.technician_id);
+              const technician = users.find((u: any) => u.user_id === r.technician_id);
               const getRowColor = () => {
                 switch (r.status) {
                   case "completed": return "bg-emerald-50/30 border-l-4 border-l-emerald-400";
@@ -333,14 +333,30 @@ export default function Maintenance() {
               return (
                 <TableRow key={r.id} className={getRowColor()}>
                   <TableCell className="font-medium">{asset?.asset_name}</TableCell>
-                  <TableCell><StatusBadge status={r.maintenance_type} /></TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {r.maintenance_type === "preventive" && <Wrench className="w-4 h-4 text-green-500" />}
+                      {r.maintenance_type === "corrective" && <AlertTriangle className="w-4 h-4 text-blue-500" />}
+                      {r.maintenance_type === "predictive" && <TrendingUp className="w-4 h-4 text-purple-500" />}
+                      {r.maintenance_type === "emergency" && <AlertTriangle className="w-4 h-4 text-red-500" />}
+                      <StatusBadge status={r.maintenance_type} />
+                    </div>
+                  </TableCell>
                   <TableCell className="text-muted-foreground">
                     {new Date(r.maintenance_date).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="max-w-xs truncate">{r.description}</TableCell>
                   <TableCell className="font-medium">UGX {Number(r.cost).toLocaleString()}</TableCell>
                   <TableCell>{technician?.username || "Unassigned"}</TableCell>
-                  <TableCell><StatusBadge status={r.status} /></TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {r.status === "completed" && <CheckCircle className="w-4 h-4 text-emerald-500" />}
+                      {r.status === "in_progress" && <Clock className="w-4 h-4 text-blue-500" />}
+                      {r.status === "scheduled" && <Calendar className="w-4 h-4 text-amber-500" />}
+                      {r.status === "cancelled" && <X className="w-4 h-4 text-gray-500" />}
+                      <StatusBadge status={r.status} />
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(r)}>
@@ -489,9 +505,9 @@ export default function Maintenance() {
                   <SelectValue placeholder="Select a technician" />
                 </SelectTrigger>
                 <SelectContent>
-                  {users.filter((user: any) => user.role === "technician" || user.role === "admin").map((user: any) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.username}
+                  {users.filter((user: any) => user.role_id === "technician" || user.role_id === "admin").map((user: any) => (
+                    <SelectItem key={user.user_id} value={user.user_id}>
+                      {user.username} ({user.full_name})
                     </SelectItem>
                   ))}
                 </SelectContent>

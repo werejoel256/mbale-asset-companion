@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, Search, Download, AlertTriangle, Clock, CheckCircle, User } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Download, AlertTriangle, Clock, CheckCircle, User, X, Calendar } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -98,16 +98,18 @@ export default function FaultReports() {
   const filteredReports = useMemo(() => {
     return faultReports.filter((report: any) => {
       const asset = assets.find((a: any) => a.id === report.asset_id);
+      const reportedByUser = users.find((u: any) => u.user_id === report.reported_by);
       const searchLower = search.toLowerCase();
       return (
         asset?.asset_name?.toLowerCase().includes(searchLower) ||
         report.description?.toLowerCase().includes(searchLower) ||
         report.priority?.toLowerCase().includes(searchLower) ||
         report.status?.toLowerCase().includes(searchLower) ||
-        report.reported_by?.toLowerCase().includes(searchLower)
+        report.reported_by?.toLowerCase().includes(searchLower) ||
+        reportedByUser?.full_name?.toLowerCase().includes(searchLower)
       );
     });
-  }, [faultReports, assets, search]);
+  }, [faultReports, assets, users, search]);
 
   // Analytics
   const analytics = useMemo(() => {
@@ -200,13 +202,14 @@ export default function FaultReports() {
     const headers = ["Asset", "Description", "Priority", "Status", "Reported By", "Report Date", "Assigned To"];
     const rows = filteredReports.map((r: any) => {
       const asset = assets.find((a: any) => a.id === r.asset_id);
-      const assignedUser = users.find((u: any) => u.id === r.assigned_to);
+      const assignedUser = users.find((u: any) => u.user_id === r.assigned_to);
+      const reportedByUser = users.find((u: any) => u.user_id === r.reported_by);
       return [
         asset?.asset_name || "",
         r.description || "",
         r.priority || "",
         r.status || "",
-        r.reported_by || "",
+        reportedByUser?.full_name || r.reported_by || "",
         r.report_date || "",
         assignedUser?.username || "",
       ];
@@ -332,7 +335,8 @@ export default function FaultReports() {
           <TableBody>
             {filteredReports.map((r: any) => {
               const asset = assets.find((a: any) => a.id === r.asset_id);
-              const assignedUser = users.find((u: any) => u.id === r.assigned_to);
+              const assignedUser = users.find((u: any) => u.user_id === r.assigned_to);
+              const reportedByUser = users.find((u: any) => u.user_id === r.reported_by);
               const isHighPriority = r.priority === "high" || r.priority === "critical";
               const isOpen = r.status === "reported" || r.status === "investigating";
 
@@ -341,15 +345,63 @@ export default function FaultReports() {
                   key={r.id}
                   className={`${isHighPriority ? "bg-red-50/50 border-l-4 border-l-red-400" : ""} ${isOpen && !isHighPriority ? "bg-orange-50/30" : ""}`}
                 >
-                  <TableCell className="font-medium">{asset?.asset_name}</TableCell>
-                  <TableCell className="max-w-xs truncate">{r.description}</TableCell>
-                  <TableCell><StatusBadge status={r.priority} /></TableCell>
-                  <TableCell><StatusBadge status={r.status} /></TableCell>
-                  <TableCell>{r.reported_by}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {new Date(r.report_date).toLocaleDateString()}
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
+                      <span className="text-teal-700">{asset?.asset_name}</span>
+                    </div>
                   </TableCell>
-                  <TableCell>{assignedUser?.username || "Unassigned"}</TableCell>
+                  <TableCell className="max-w-xs">
+                    <div className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-slate-400 rounded-full mt-2 flex-shrink-0"></div>
+                      <span className="text-slate-700 truncate">{r.description}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {r.priority === "critical" && <AlertTriangle className="w-4 h-4 text-red-500" />}
+                      {r.priority === "high" && <AlertTriangle className="w-4 h-4 text-orange-500" />}
+                      {r.priority === "medium" && <Clock className="w-4 h-4 text-yellow-500" />}
+                      {r.priority === "low" && <CheckCircle className="w-4 h-4 text-green-500" />}
+                      <StatusBadge status={r.priority} />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {r.status === "resolved" && <CheckCircle className="w-4 h-4 text-emerald-500" />}
+                      {r.status === "investigating" && <Clock className="w-4 h-4 text-orange-500" />}
+                      {r.status === "reported" && <AlertTriangle className="w-4 h-4 text-red-500" />}
+                      {r.status === "closed" && <X className="w-4 h-4 text-gray-500" />}
+                      <StatusBadge status={r.status} />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-purple-500" />
+                      <span className="text-purple-700">{reportedByUser?.full_name || r.reported_by}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-indigo-500" />
+                      <span className="text-indigo-700">{new Date(r.report_date).toLocaleDateString()}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {assignedUser ? (
+                        <>
+                          <User className="w-4 h-4 text-blue-500" />
+                          <span className="text-blue-700 font-medium">{assignedUser.username}</span>
+                        </>
+                      ) : (
+                        <>
+                          <User className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-500 italic">Unassigned</span>
+                        </>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(r)}>
@@ -492,9 +544,9 @@ export default function FaultReports() {
                   <SelectValue placeholder="Select technician" />
                 </SelectTrigger>
                 <SelectContent>
-                  {users.filter((user: any) => user.role === "technician" || user.role === "admin").map((user: any) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.username}
+                  {users.filter((user: any) => user.role_id === "technician" || user.role_id === "admin").map((user: any) => (
+                    <SelectItem key={user.user_id} value={user.user_id}>
+                      {user.username} ({user.full_name})
                     </SelectItem>
                   ))}
                 </SelectContent>
